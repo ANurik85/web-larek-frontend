@@ -7,7 +7,6 @@ export const settings = {
   
 };
 
-
 export const constraintsAddress = {
 	address: {
 		presence: { message: '^Поле не может быть пустым', allowEmpty: false },
