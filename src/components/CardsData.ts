@@ -1,32 +1,40 @@
-
-import { FormErrors, ICard, ICardsData, IOrder } from "../types";
-import { IEvents } from "./base/events";
-import { Model } from "./base/Model";
-import { Card } from "./Card";
 import _ from "lodash";
+import { Model } from "./base/Model";
+import { FormErrors, ICardsData, ICard, IOrder, IProduct } from "../types";
+
+
+export class CardItem extends Model<ICard> {
+
+    id: string;
+    description: string;
+    image: string;
+    title: string;
+    category: string;
+    price: number;
+}
 
 export class CardsData extends Model<ICardsData> {
- 
-    
-     catalog: Card[] = [];
-     basket: string[] = [];
-    /* catalog: ICard[]; */
+
+    catalog: CardItem[] = [];
+    basket: IProduct[];
+    loading: boolean;
     order: IOrder = {
         email: '',
         phone: '',
+        paymentMethod: '',
         address: '',
         items: []
     };
-    preview: string | null;
+
+    preview: string | null = null;
     formErrors: FormErrors = {};
-    
-  
-    constructor(protected events: IEvents) {
-        super({ cards: [], basket: [], preview: null, order: this.order }, events);
-        
+
+
+    getCardItem(id: string): IProduct | undefined {
+        return this.catalog.find((item) => item.id === id);
     }
-    
-    toggleOrderedLot(id: string, isIncluded: boolean) {
+
+    toggleOrderedCard(id: string, isIncluded: boolean) {
         if (isIncluded) {
             this.order.items = _.uniq([...this.order.items, id]);
         } else {
@@ -36,31 +44,67 @@ export class CardsData extends Model<ICardsData> {
 
     clearBasket() {
         this.order.items.forEach(id => {
-            this.toggleOrderedLot(id, false);
-            this.catalog.find(it => it.id === id).clearCard();
+            this.toggleOrderedCard(id, false);
+            this.catalog.find(it => it.id === id)
         });
     }
 
+
     getTotal() {
-        return this.order.items.reduce((a, c) => a + this.catalog.find(it => it.id === c).price, 0)
+        return this.order.items.reduce((a, c) => a + (this.catalog.find(it => it.id === c)?.price || 0), 0);
     }
 
     setCatalog(items: ICard[]) {
-        this.catalog = items.map(item => new Card(item, this.events));
+        this.catalog = items.map(item => new CardItem(item, this.events));
         this.emitChanges('items:changed', { catalog: this.catalog });
     }
-    
-    setPreview(item: ICard) {
+
+    setPreview(item: CardItem) {
         this.preview = item.id;
-        this.emitChanges('preview:changed', item);
+        this.emitChanges('card:select', item);
     }
 
-    setOrderField(field: keyof IOrderForm, value: string) {
-        this.order[field] = value;
+
+    setOrderField(field: keyof IOrder, value: string) {
+        (this.order[field] as string) = value;
+
         if (this.validateOrder()) {
             this.events.emit('order:ready', this.order);
         }
     }
+
+    addToBasket(cardId: IProduct): { success: boolean, message: string } {
+        this.basket.push(cardId);
+        return { success: true, message: 'Карточка добавлена в корзину' };
+    }
+
+    // addCard(card: CardItem) {
+    //     this.catalog.push(card);
+    //     this.emitChanges('cardAdded', card);
+    // }
+
+    removeCard(cardId: string) {
+        this.catalog = this.catalog.filter(card => card.id !== cardId);
+        this.emitChanges('cardRemoved', { id: cardId });
+    }
+
+    get items(): ICard[] {
+        return this.catalog;
+    }
+
+    setItems(items: CardItem[]) {
+        this.catalog = items;
+        this.emitChanges('itemsUpdated');
+    }
+
+    get cards(): ICard[] {
+        return this.catalog;
+    }
+
+    getCard(cardId: string): ICard | undefined {
+        return this.catalog.find(card => card.id === cardId);
+    }
+
 
     validateOrder() {
         const errors: typeof this.formErrors = {};

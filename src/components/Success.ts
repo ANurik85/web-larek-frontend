@@ -1,12 +1,16 @@
-import {Component} from "./base/Component";
-import {ensureElement} from "../utils/utils";
-import { TOrderSuccess } from "../types";
+import { Component } from "./base/Component";
+import { ensureElement } from "../utils/utils";
+
+
+interface ISuccess {
+    total: number;
+}
 
 interface ISuccessActions {
     onClick: () => void;
 }
 
-export class Success extends Component<TOrderSuccess> {
+export class Success extends Component<ISuccess> {
     protected _close: HTMLElement;
     protected _total: HTMLElement;
 
@@ -24,5 +28,5 @@ export class Success extends Component<TOrderSuccess> {
         const text = this._total.innerText;
         this._total.innerText = text.replace(/\d+/, `${total}`);
     }
-    
+
 }

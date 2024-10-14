@@ -1,14 +1,16 @@
 import {Component} from "../base/Component";
 import {IEvents} from "../base/events";
 import {ensureElement} from "../../utils/utils";
-import { IForm } from "../../types";
 
+interface IFormState {
+    
+    valid: boolean;
+    errors: string[];
+}
 
-export class Form<T> extends Component<IForm> {
+export class Form<T> extends Component<IFormState> {
     protected _submit: HTMLButtonElement;
     protected _errors: HTMLElement;
-    
-
 
     constructor(protected container: HTMLFormElement, protected events: IEvents) {
         super(container);
@@ -27,6 +29,7 @@ export class Form<T> extends Component<IForm> {
             e.preventDefault();
             this.events.emit(`${this.container.name}:submit`);
         });
+        
     }
 
     protected onInputChange(field: keyof T, value: string) {
@@ -44,7 +47,7 @@ export class Form<T> extends Component<IForm> {
         this.setText(this._errors, value);
     }
 
-    render(state: Partial<T> & IForm) {
+    render(state: Partial<T> & IFormState) {
         const {valid, errors, ...inputs} = state;
         super.render({valid, errors});
         Object.assign(this, inputs);

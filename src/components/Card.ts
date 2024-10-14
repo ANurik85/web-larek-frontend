@@ -1,41 +1,37 @@
-
-import {Component} from "./base/Component";
- import {ICard, IForm} from "../types";
-import {ensureElement} from "../utils/utils"; 
-
-interface IAuctionActions {
-    onSubmit: (price: number) => void;
-}
+import { Component } from "./base/Component";
+import { ICard } from "../types";
+import { createElement, ensureElement, formatNumber } from "../utils/utils";
+import { IEvents } from "./base/events";
 
 export class Card extends Component<ICard> {
-   
-    
     protected _title: HTMLElement;
-    protected _category: HTMLElement;
-    protected _price: HTMLElement;
     protected _image?: HTMLImageElement;
     protected _description?: HTMLElement;
-    
+    protected _button?: HTMLButtonElement;
+    protected _price: HTMLElement;
+    protected _category: HTMLElement;
 
-    constructor(container: HTMLElement, actions?: IAuctionActions) {
+
+    constructor(protected container: HTMLElement, protected events: IEvents) {
         super(container);
 
-        
-        
-        this._title = ensureElement<HTMLElement>(`.card__title`, container) as HTMLElement;
-        this._category = ensureElement<HTMLElement>(`.card__category`, container) as HTMLElement;
-        this._price = ensureElement<HTMLElement>(`.card__price`, container) as HTMLElement;
-        this._image = ensureElement<HTMLImageElement>(`.card__image`, container) as HTMLImageElement;
-        this._description = ensureElement<HTMLElement>(`.card__text`, container) as HTMLElement;
-        
-        
+        this._title = ensureElement<HTMLElement>(`.card__title`, container);
+        this._image = ensureElement<HTMLImageElement>(`.card__image`, container);
+        this._button = container.querySelector(`.card__button`);
+        this._description = container.querySelector(`.card__text`);
+        this._price = container.querySelector(`.card__price`);
+        this._category = container.querySelector(`.card__category`);
+
+
+        if (this._button) {
+            this._button.addEventListener('click', () => {
+                this.events.emit('basket:add', { id: this.id });
+            });
+        }
+
+
     }
 
-    clearCard() {
-        // удаление карточки товара из корзину
-        this.container.remove();
-        
-    }
     set id(value: string) {
         this.container.dataset.id = value;
     }
@@ -50,6 +46,22 @@ export class Card extends Component<ICard> {
 
     get title(): string {
         return this._title.textContent || '';
+    }
+
+    set price(value: string) {
+        this.setText(this._price, value);
+    }
+
+    get price(): string {
+        return this._price.textContent || '';
+    }
+
+    set category(value: string) {
+        this.setText(this._category, value);
+    }
+
+    get category(): string {
+        return this._category.textContent || '';
     }
 
     set image(value: string) {
@@ -68,8 +80,5 @@ export class Card extends Component<ICard> {
         }
     }
 
-    render(data: Partial<ICard>): HTMLElement {
-        Object.assign(this as object, data);
-        return this.container;
-    }
+
 }

@@ -1,13 +1,17 @@
-import { Api, ApiListResponse } from './base/api';
-import {IOrder, IOrderResult, ICard} from "../types";
+import { Api, ApiListResponse, ApiPostMethods } from './base/api';
+import { ICard, IOrder, IOrderResult } from "../types";
 
 export interface IAPI {
+    baseUrl: string;
+    get<T>(uri: string): Promise<T>;
+    post<T>(uri: string, data: object, method?: ApiPostMethods): Promise<T>;
     getCardList: () => Promise<ICard[]>;
     getCardItem: (id: string) => Promise<ICard>;
-    orderCards: (order: IOrder) => Promise<IOrderResult>;
+    orderCards(order: IOrder): Promise<IOrderResult>;
 }
 
 export class AppApi extends Api implements IAPI {
+
     readonly cdn: string;
 
     constructor(cdn: string, baseUrl: string, options?: RequestInit) {
@@ -16,7 +20,7 @@ export class AppApi extends Api implements IAPI {
     }
 
     getCardItem(id: string): Promise<ICard> {
-        return this.get(`/product/${id}`).then(
+        return this.get<ICard>(`/product/${id}`).then(
             (item: ICard) => ({
                 ...item,
                 image: this.cdn + item.image,
@@ -25,7 +29,7 @@ export class AppApi extends Api implements IAPI {
     }
 
     getCardList(): Promise<ICard[]> {
-        return this.get('/product').then((data: ApiListResponse<ICard>) =>
+        return this.get<ApiListResponse<ICard>>('/product/').then((data) =>
             data.items.map((item) => ({
                 ...item,
                 image: this.cdn + item.image
@@ -38,5 +42,6 @@ export class AppApi extends Api implements IAPI {
             (data: IOrderResult) => data
         );
     }
+
 
 }

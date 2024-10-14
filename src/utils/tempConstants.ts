@@ -1,7 +1,6 @@
-export const testForm = [
-	{
+export const testForm = {
 		payment: 'online',
-		email: 'test@test.ru',
+		email: 'test@test.com',
 		phone: '+71234567890',
 		address: 'Spb Vosstania 1',
 		total: 2200,
@@ -9,50 +8,27 @@ export const testForm = [
 			'854cef69-976d-4c2a-a18c-2aa45046c390',
 			'c101ab44-ed99-4a54-990d-47aa2bb4e7d9',
 		],
-	},
-];
+	};
+
 
 export const testItemCard = [
 	{
 		id: '854cef69-976d-4c2a-a18c-2aa45046c470',
 		description: 'Если планируете .',
 		image: '/5_Dots.svg',
-		title: '+1 час в ',
-		category: 'софт-',
+		title: '+1 час ',
+		category: 'софт',
 		price: 70,
 	},
-];
-
-export const testItemCard3 = [
-		
-		
-			{
-				id: '854cef69-976d-4c2a-a18c-2aa45046c390',
-				description: 'Если планируете решать задачи в тренажёре, берите два.',
-				image: '/5_Dots.svg',
-				title: '+1 час в сутках',
-				category: 'софт-скил',
-				price: 750,
-			},
-			{
-				id: 'c101ab44-ed99-4a54-990d-47aa2bb4e7d9',
-				description:
-					'Лизните этот леденец, чтобы мгновенно запоминать и узнавать любой цветовой код CSS.',
-				image: '/Shell.svg',
-				title: 'HEX-леденец',
-				category: 'другое',
-				price: 1450,
-			},
-			{
-				id: 'b06cde61-912f-4663-9751-09956c0eed67',
-				description: 'Будет стоять над душой и не давать прокрастинировать.',
-				image: '/Asterisk_2.svg',
-				title: 'Мамка-таймер',
-				category: 'софт-скил',
-				price: null,
-			}
-		];
-	
+	{
+		id: '854cef69-976d-4c2a-a18c-2aa45046c470',
+		description: 'Если планируете .',
+		image: '/5_Dots.svg',
+		title: '+1 час ',
+		category: 'софт',
+		price: 70,
+	}
+]
 
 export const testCards = [
 	{
@@ -139,8 +115,9 @@ export const testCards = [
 				image: '/Mithosis.svg',
 				title: 'Бэкенд-антистресс',
 				category: 'другое',
-				price: 1000,
+				price: 1001,
 			},
 		],
 	},
 ];
+

@@ -41,4 +41,4 @@ export class Modal extends Component<IModalData> {
         this.open();
         return this.container;
     }
-} 
+}
