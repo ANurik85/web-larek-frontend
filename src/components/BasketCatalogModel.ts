@@ -1,16 +1,15 @@
 
 import { IProduct } from "../types";
-import { IBasketModel } from "./BasketModel";
 
 // модул католог товара для корзину
 
-export interface ICatalogModel {
+export interface IBasketCatalog {
   items: IProduct[];
   setItems(items: IProduct[]): void; // чтобы установть после загрузки из апи
   getProduct(id: string): IProduct; // чтобы получить при рендере списков
 }
 
-export class CatalogModel implements ICatalogModel {
+export class BasketCatalogModel implements IBasketCatalog {
   items: IProduct[] = [];
   setItems(items: IProduct[]): void {
     this.items = items;

@@ -16,9 +16,9 @@ export interface IProduct {
 
 export interface ICardsData {
   catalog: ICard[];
-  basket: string[];
+  
   preview: string | null;
-  order: IOrder | null;
+  order: IOrder;
   loading: boolean;
   cardId: string;
   getCardItem(id: string): ICard | undefined;
@@ -27,14 +27,6 @@ export interface ICardsData {
   addToBasket(cardId: IProduct): void;
 }
 
-// export type IBasketItem = Pick<ICard, 'id' | 'title' | 'price'> & {
-//   isMyBid: boolean
-// };
-
-// export interface IOrder {
-//     items: ICard[];
-//     total: number;
-//   }
 
 export interface IFormContacts {
   email: string;
@@ -47,29 +39,12 @@ export interface IFormAddress {
 
 }
 
-export interface IOrder extends IFormContacts, IFormAddress {
+export interface IOrder {
   items: string[]
 }
 
-export type FormErrors = Partial<Record<keyof IOrder, string>>;
+export type FormErrors = Partial<Record<keyof (IFormAddress & IFormContacts), string>>;
 
-export interface IOrderResult {
-
-  payment: string;
-  email: string;
-  phone: string;
-  address: string;
+export interface IOrderResult extends IFormAddress, IFormContacts, IOrder  {
   total: number;
-  items: string[]
 }
-
-// -----------------------
-
-// export type TCardfull = Pick<ICard, 'title' | 'description' | 'category' | 'price'>;
-
-// // export type TСontactsForm = Pick<IForm, 'email' | 'phone' | 'valid' | 'errors'>;
-// // export type TOrderSuccess = Pick<IForm, 'total'> & Pick<ICard, 'id'>;
-// export type TBasketCard = Pick<ICard, 'title' | 'price'> & Pick<ICard, 'id'>;
-// export type TValidationInfo = Pick<IForm, 'email' | 'phone' | 'address'>;
-// export type FormErrors = Partial<Record<keyof IOrder, string>>;
-// // export type TBasketForm = Pick<IForm, 'total'> & Pick<ICard, 'title' | 'price'>;

@@ -1,4 +1,4 @@
-import { ICard } from "../types";
+import { ICard, IProduct } from "../types";
 
 export interface IBasketModel {
   items: Map<string, number>;
@@ -13,6 +13,8 @@ interface EventEmitter {
 
 export class BasketModel implements IBasketModel {
   items: Map<string, number> = new Map();
+  basket: IProduct[];
+  catalog: ICard[] = [];
   constructor(protected events: EventEmitter) { }
 
   add(id: string): void {
@@ -21,8 +23,6 @@ export class BasketModel implements IBasketModel {
 
     this._changed();
   }
-
-
 
   remove(id: string): void {
     if (!this.items.has(id)) return; // если нет, то и делать с ним нечево
@@ -34,6 +34,16 @@ export class BasketModel implements IBasketModel {
     this._changed();
   }
 
+  addToBasket(cardId: IProduct): { success: boolean, message: string } {
+    this.basket.push(cardId);
+    return { success: true, message: 'Карточка добавлена в корзину' };
+}
+
+removeCard(cardId: string) {
+    this.catalog = this.catalog.filter(card => card.id !== cardId);
+    this.events.emit('cardRemoved', { id: cardId });
+}
+ 
   getItems(): { id: string, quantity: number }[] {
     return Array.from(this.items.entries()).map(([id, quantity]) => ({ id, quantity }));
   }

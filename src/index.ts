@@ -3,26 +3,26 @@ import './scss/styles.scss';
 import { AppApi } from "./components/AppApi";
 import { API_URL, CDN_URL } from "./utils/constants";
 import { EventEmitter } from "./components/base/events";
-import { CardsData, CardItem } from "./components/CardsData";
+import { CardsData } from "./components/CardsData";
 import { Page } from "./components/Page";
 import { Card } from "./components/Card";
 import { cloneTemplate, createElement, ensureElement } from "./utils/utils";
 import { Modal } from "./components/common/Modal";
-import {/* Basket */ BasketItemView, BasketView } from "./components/BasketView";
-import { IFormAddress, IFormContacts, IOrder } from "./types";
+import { BasketItemView, BasketView } from "./components/BasketView";
+import { IFormAddress, IFormContacts, ICard } from "./types";
 import { Order } from "./components/Order";
 import { Success } from "./components/Success";
 import { BasketModel } from './components/BasketModel';
-import { CatalogModel } from './components/BasketData';
+import { BasketCatalogModel } from './components/BasketCatalogModel';
 import { OrderAddress } from './components/OrderAddress';
 
 const events = new EventEmitter();
 const api = new AppApi(CDN_URL, API_URL);
 
-// // Чтобы мониторить все события, для отладки
-// events.onAll(({ eventName, data }) => {
-//     console.log(eventName, data);
-// })
+// Чтобы мониторить все события, для отладки
+events.onAll(({ eventName, data }) => {
+    console.log(eventName, data);
+})
 
 // Все шаблоны
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
@@ -39,22 +39,13 @@ const cardsData = new CardsData({}, events);
 // Глобальные контейнеры
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
-
 const cardsContainer = new Page(document.querySelector('.gallery'), events);
-
-// Переиспользуемые части интерфейса
-// const basket = new Basket(cloneTemplate(basketTemplate), events);
-
 const order = new Order(cloneTemplate(orderContactsTemplate), events);
 const orderAddress = new OrderAddress(cloneTemplate(orderAddressTemplate), events);
-
-// инициализация
-//   const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
 const basketView = new BasketView(document.querySelector('.basket'));
-
-
 const basketModel = new BasketModel(events);
-const catalogModel = new CatalogModel();
+const basketCatalogModel = new BasketCatalogModel();
+
 // Дальше идет бизнес-логика
 // Поймали событие, сделали что нужно
 
@@ -105,7 +96,7 @@ events.on('order:submit', () => {
 });
 
 // Изменилось состояние валидации формы
-events.on('formErrors:change', (errors: Partial<IOrder>) => {
+events.on('formErrors:change', (errors: Partial<(IFormAddress & IFormContacts)>) => {
     const { email, phone, address, paymentMethod } = errors;
     orderAddress.valid = !address && !paymentMethod;
     order.valid = !email && !phone;
@@ -117,10 +108,9 @@ events.on('formErrors:change', (errors: Partial<IOrder>) => {
 });
 
 // Изменилось одно из полей
-events.on(/^order\..*:change/, (data: { field: keyof IOrder, value: string }) => {
-    cardsData.setOrderField(data.field, data.value);
+events.on(/^order\..*:change/, (data: { field: keyof (IFormAddress & IFormContacts), value: string }) => {
+    order.setOrderField(data.field as keyof IFormContacts, data.value);
 });
-
 
 
 // Открыть форму заказа способа оплаты
@@ -148,42 +138,23 @@ events.on('order:open', () => {
 });
 
 
-// const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
+const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
 
-// events.on('basket:add', (event: { id: string }) => {
-//     const cardId = event.id;
+events.on('basket:add', (event: { id: string }) => {
+    const cardId = event.id;
 
-//     const cardItem = cardsData.getCardItem(cardId);
-//     if (cardItem) {
-//       const { ...cardData } = cardItem;
-//       basketItemView.items.push(cardItem);
-//       // basketItemView.updateItems(); // Обновить список карточек в корзине
-//       // console.log('Карточка добавлена в корзину:', cardItem);
-//       // console.log('Содержимое корзины:', basketItemView.items.length);
-//       modal.close(); // Закрыть модальное окно
-//     }
-//   });
-
-// // Открыть карточки
-// events.on('basket:open', () => {
-//   const basketView = new BasketView(cloneTemplate(basketTemplate));
-//   const basketItems = basketModel.getItems();
-
-//   basketItems.forEach((item) => {
-//     const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
-//     basketItemView.render({ id: item.id, title: catalogModel.getProduct(item.id).title });
-//     basketView.container.appendChild(basketItemView.container);
-//   });
-
-//   modal.render({
-//     content: basketView.render({ items: basketItems.map((item) => basketItemView.container) }),
-//   });
-// });
+    const ICard = cardsData.getCardItem(cardId);
+    if (ICard) {
+      const { ...cardData } = ICard;
+      basketItemView.items.push(ICard);
+      modal.close(); // Закрыть модальное окно
+    }
+  });
 
 
 // Открыть выбранный карточки
-events.on('card:select', (item: CardItem) => {
-    const showItem = (item: CardItem) => {
+events.on('card:select', (item: ICard) => {
+    const showItem = (item: ICard) => {
         const card = new Card(cloneTemplate(cardPreviewTemplate), events);
         const modalContent = card.render({
             title: item.title,
@@ -235,29 +206,10 @@ events.on('modal:close', () => {
     page.locked = false;
 });
 
+events.on('basket:change', (data: { items: string[] }) => {
+    // выводим куда-то
+  });
 
-// --------------------------------------------------------
-
-
-// events.on('basket:change', (data: { items: string[] }) => {
-//     // выводим куда-то
-//   });
-
-// //   можно собрать в функции или классы отдельные экраны с логикой их формирования
-//   function renderBasket(items: string[]) {
-//     basketView.render({
-//         items: items.map(id => {
-//           const itemView = new BasketView(cloneTemplate(cardBasketTemplate));
-//           return itemView.render(catalogModel.getProduct(id));
-//         }),
-
-//       });
-//   }
-
-// // при изменении рендерим
-// events.on('basket:change', (event: { items: string[] }) => {
-//   renderBasket(event.items);
-// });
 
 // при действиях изменяем модель, а после этого случится рендер 
 events.on('ui:basket-add', (event: { id: string }) => {
@@ -272,7 +224,7 @@ events.on('ui:basket-remove', (event: { id: string }) => {
 // Получаем список карточки с сервера
 api.getCardList()
     .then(cardsData.setCatalog.bind(cardsData))
-    .then(catalogModel.setItems.bind(catalogModel))
+    .then(basketCatalogModel.setItems.bind(basketCatalogModel))
     .catch(err => {
         console.error(err);
     });

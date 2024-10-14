@@ -1,8 +1,4 @@
-import { Component } from "././base/Component";
-import { cloneTemplate, createElement, ensureElement, formatNumber } from ".././utils/utils";
 import { EventEmitter } from "././base/events";
-import { ICard, ICardsData } from "../types";
-import { CardsData } from "./CardsData";
 
 // класс отображение, и реализация отдельного товара в корзину
 interface IViewConstructor {
@@ -22,15 +18,15 @@ export class BasketItemView implements IView {
   protected id: string | null = null;
 
   constructor(protected container: HTMLElement, protected events: EventEmitter) {
-    this.title = container.querySelector('basket-item__title') as HTMLSpanElement;
-    this.addButton = container.querySelector('basket-item__add') as HTMLButtonElement;
-    this.removeButton = container.querySelector('basket-item__remove') as HTMLButtonElement;
+    this.title = container.querySelector('.card__title') as HTMLSpanElement;
+    this.addButton = container.querySelector('.basket__item-add') as HTMLButtonElement;
+    this.removeButton = container.querySelector('.basket__item-delete') as HTMLButtonElement;
     // устанавливаем события
 
-    // this.addButton.addEventListener('click', () => {
-    //   // генерируем событие в нашем брокере
-    //   this.events.emit('basket:add', { id: this.id });
-    // });
+    this.addButton.addEventListener('click', () => {
+      // генерируем событие в нашем брокере
+      this.events.emit('basket:add', { id: this.id });
+    });
 
     this.removeButton.addEventListener('click', () => {
       this.events.emit('basket:remove', { id: this.id });
@@ -47,7 +43,6 @@ export class BasketItemView implements IView {
     return this.container;
   }
 }
-
 
 // корзина товара
 export class BasketView implements IView {
