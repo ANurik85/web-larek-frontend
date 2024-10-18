@@ -1,9 +1,9 @@
 import { Form } from "./common/Form";
-import { FormErrors, IFormAddress } from "../types";
+import { FormErrors, IFormAddress, IOrderResult } from "../types";
 import { EventEmitter, IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
 
-export class OrderAddress extends Form<IFormAddress> {
+export class OrderAddress extends Form<IOrderResult> {
 
   private _paymentMethod: string;
   protected _button: HTMLElement;
@@ -45,14 +45,14 @@ export class OrderAddress extends Form<IFormAddress> {
     return this._paymentMethod;
   }
 
-  setOrderField(field: keyof IFormAddress, value: string) {
+  setAddressField(field: keyof IFormAddress, value: string) {
     (this.order[field]) = value;
 
-    if (this.validateOrder()) {
-        this.events.emit('order:ready', this.order);
+    if (this.validateAddress()) {
+        this.events.emit('address:ready', this.order);
     }
 }
-  validateOrder() {
+  validateAddress() {
     const errors: typeof this.formErrors = {};
     if (!this.order.address) {
       errors.address = 'Необходимо указать адрес доставки';

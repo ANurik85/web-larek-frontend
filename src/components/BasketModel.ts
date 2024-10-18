@@ -2,8 +2,6 @@ import { ICard, IProduct } from "../types";
 
 export interface IBasketModel {
   items: Map<string, number>;
-  add(id: string): void;
-  remove(id: string): void;
   getItems(): { id: string, quantity: number }[]
 }
 
@@ -13,43 +11,52 @@ interface EventEmitter {
 
 export class BasketModel implements IBasketModel {
   items: Map<string, number> = new Map();
-  basket: IProduct[];
-  catalog: ICard[] = [];
+  basket: IProduct[] = [];
+
   constructor(protected events: EventEmitter) { }
 
-  add(id: string): void {
-    if (!this.items.has(id)) this.items.set(id, 0); // создаем новый
-    this.items.set(id, this.items.get(id)! + 1); // прибавляем количество
+  addToBasket(cardId: IProduct): boolean {
 
-    this._changed();
-  }
-
-  remove(id: string): void {
-    if (!this.items.has(id)) return; // если нет, то и делать с ним нечево
-    if (this.items.get(id)! > 0) { // если есть и больше ноля, то... 
-      this.items.set(id, this.items.get(id)! - 1); // уменьшаем 
-      if (this.items.get(id) === 0) this.items.delete(id); // если опустили до ноля, то удаляем
+    const index = this.basket.findIndex(item => item.id === cardId.id);
+    if (index === -1) {
+      this.basket.push(cardId);
+      this.items.set(cardId.id, 1);
+      this.updateItemCount();
+      return true;
+    } else {
+      const currentQuantity = this.items.get(cardId.id) || 0;
+      this.items.set(cardId.id, currentQuantity + 1);
+      this.updateItemCount();
+      return false;
     }
-
-    this._changed();
+  }
+  
+  removeCard(cardId: string) {
+    this.basket = this.basket.filter(card => card.id !== cardId);
+    this.items.delete(cardId);
+    this.events.emit('basket:remove', { id: cardId });
+    this.updateItemCount();
   }
 
-  addToBasket(cardId: IProduct): { success: boolean, message: string } {
-    this.basket.push(cardId);
-    return { success: true, message: 'Карточка добавлена в корзину' };
-}
+  clearBasket(): void {
+    this.basket.forEach(card => {
+      this.removeCard(card.id);
+    });
+    this.basket = [];
+    this.updateItemCount();
+  }
 
-removeCard(cardId: string) {
-    this.catalog = this.catalog.filter(card => card.id !== cardId);
-    this.events.emit('cardRemoved', { id: cardId });
-}
- 
   getItems(): { id: string, quantity: number }[] {
     return Array.from(this.items.entries()).map(([id, quantity]) => ({ id, quantity }));
   }
 
-  protected _changed(): void {
-    this.events.emit('basket:change', { item: Array.from(this.items.keys()) });
+  getItemCount(): number {
+    return this.items.size;
+  }
+
+  // Обновляем отображение количества карточек в корзине
+  updateItemCount() {
+    const itemCount = this.getItemCount();
+    this.events.emit('basket:update', { itemCount });
   }
 }
-

@@ -1,11 +1,10 @@
 import { Form } from "./common/Form";
-import { FormErrors, IFormContacts } from "../types";
+import { FormErrors, IFormContacts, IOrderResult } from "../types";
 import { EventEmitter, IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
 
-export class Order extends Form<IFormContacts> {
-  
-
+export class Order extends Form<IOrderResult> {
+ 
   order: IFormContacts = {
     email: '',
     phone: '',
@@ -15,6 +14,7 @@ export class Order extends Form<IFormContacts> {
 
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container, events);
+
   }
 
   set phone(value: string) {

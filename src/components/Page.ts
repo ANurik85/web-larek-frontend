@@ -26,11 +26,17 @@ export class Page extends Component<IPage> {
         this._basket.addEventListener('click', () => {
             this.events.emit('basket:open');
         });
+
+      // Событие обновления корзины
+    this.events.on('basket:update', ({ itemCount }: { itemCount: number }) => {
+        this.counter = itemCount;
+      });
+
     }
 
     set counter(value: number) {
         this.setText(this._counter, String(value));
-    }
+      }
 
     set catalog(items: HTMLElement[]) {
         this._catalog.replaceChildren(...items);

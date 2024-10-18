@@ -5,58 +5,29 @@ import { Card } from "./Card";
 
 export class CardsData extends Model<ICardsData> {
 
-    catalog: ICard[] = [];
-    loading: boolean;
-    order: IOrder;
-    preview: string | null = null;
-    
-    getCardItem(id: string): IProduct | undefined {
-        return this.catalog.find((item) => item.id === id);
-    }
+  catalog: ICard[] = [];
+  loading: boolean;
+  preview: string | null = null;
+  static getCardItem: string;
 
-    toggleOrderedCard(id: string, isIncluded: boolean) {
-        if (isIncluded) {
-            this.order.items = _.uniq([...this.order.items, id]);
-        } else {
-            this.order.items = _.without(this.order.items, id);
-        }
-    }
+  getCardItem(id: string): IProduct | undefined {
+    const card = this.catalog.find((item) => item.id === id);
 
-    clearBasket() {
-        this.order.items.forEach(id => {
-            this.toggleOrderedCard(id, false);
-            this.catalog.find(it => it.id === id)
-        });
-    }
+    return card;
+  }
 
-    getTotal() {
-        return this.order.items.reduce((a, c) => a + (this.catalog.find(it => it.id === c)?.price || 0), 0);
-    }
+  setCatalog(items: ICard[]) {
 
-    setCatalog(items: ICard[]) {
-        this.catalog = items;
-        this.emitChanges('items:changed', { catalog: this.catalog });
-    }
+    this.catalog = items;
+    this.emitChanges('items:changed', { catalog: this.catalog });
+  }
 
-    setPreview(item: ICard) {
-        this.preview = item.id;
-        this.emitChanges('card:select', item);
-    }
+  setPreview(item: ICard) {
+    this.preview = item.id;
+    this.emitChanges('card:select', item);
+  }
 
-    get items(): ICard[] {
-        return this.catalog;
-    }
-
-    setItems(items: ICard[]) {
-        this.catalog = items;
-        this.emitChanges('itemsUpdated');
-    }
-
-    get cards(): ICard[] {
-        return this.catalog;
-    }
-
-    getCard(cardId: string): ICard | undefined {
-        return this.catalog.find(card => card.id === cardId);
-    }
+  get cards(): ICard[] {
+    return this.catalog;
+  }
 }

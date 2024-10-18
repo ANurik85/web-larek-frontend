@@ -5,26 +5,23 @@ export interface ICard {
   image: string;
   title: string;
   category: string;
-  price: number;
+  price: string;
 }
 export interface IProduct {
-  price?: number;
   id: string;
   title: string;
-  index?: string;
+  price: string;
+  
 }
 
 export interface ICardsData {
   catalog: ICard[];
-  
   preview: string | null;
-  order: IOrder;
   loading: boolean;
   cardId: string;
   getCardItem(id: string): ICard | undefined;
   setCatalog(items: ICard[]): void;
   setPreview(item: ICard[]): void;
-  addToBasket(cardId: IProduct): void;
 }
 
 

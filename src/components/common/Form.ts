@@ -9,8 +9,11 @@ interface IFormState {
 }
 
 export class Form<T> extends Component<IFormState> {
+
     protected _submit: HTMLButtonElement;
     protected _errors: HTMLElement;
+    
+    protected tempOrderData: Partial<T> = {}; // для временного хранения данных
 
     constructor(protected container: HTMLFormElement, protected events: IEvents) {
         super(container);
@@ -25,19 +28,21 @@ export class Form<T> extends Component<IFormState> {
             this.onInputChange(field, value);
         });
 
+        // Обработка отправки формы
         this.container.addEventListener('submit', (e: Event) => {
-            e.preventDefault();
-            this.events.emit(`${this.container.name}:submit`);
-        });
-        
+        e.preventDefault();
+        this.events.emit(`${this.container.name}:submit`, this.tempOrderData);
+      });
+    
     }
 
-    protected onInputChange(field: keyof T, value: string) {
+      protected onInputChange(field: keyof T, value: string) {
+        (this.tempOrderData as { [key: string]: any })[field as string] = value; // Сохранение данных во временное хранилище
         this.events.emit(`${this.container.name}.${String(field)}:change`, {
-            field,
-            value
+          field,
+          value
         });
-    }
+      }
 
     set valid(value: boolean) {
         this._submit.disabled = !value;
