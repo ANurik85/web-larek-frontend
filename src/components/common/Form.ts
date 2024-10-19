@@ -12,7 +12,7 @@ export class Form<T> extends Component<IFormState> {
 
     protected _submit: HTMLButtonElement;
     protected _errors: HTMLElement;
-    
+
     protected tempOrderData: Partial<T> = {}; // для временного хранения данных
 
     constructor(protected container: HTMLFormElement, protected events: IEvents) {
@@ -37,7 +37,7 @@ export class Form<T> extends Component<IFormState> {
     }
 
       protected onInputChange(field: keyof T, value: string) {
-        (this.tempOrderData as { [key: string]: any })[field as string] = value; // Сохранение данных во временное хранилище
+        (this.tempOrderData as { [key: string]: string })[field as string] = value; // Сохранение данных во временное хранилище
         this.events.emit(`${this.container.name}.${String(field)}:change`, {
           field,
           value

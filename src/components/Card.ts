@@ -27,9 +27,13 @@ export class Card extends Component<ICard> {
             this._button.addEventListener('click', () => {
                 this.events.emit('basket:add', { id: this.id });
             });
+        // }
+        // else {
+        //     container.addEventListener('click', () => {
+                
+               
+        // });
         }
-
-
     }
 
     set id(value: string) {
@@ -48,9 +52,13 @@ export class Card extends Component<ICard> {
         return this._title.textContent || '';
     }
 
-    set price(value: string) {
-        this.setText(this._price, value);
-    }
+    set price(value: string | null) {
+        if (value === null) {
+          this.setText(this._price, 'безценно');
+        } else {
+          this.setText(this._price, `${value} синапсов`);
+        }
+      }
 
     get price(): string {
         return this._price.textContent || '';

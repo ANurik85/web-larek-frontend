@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Model } from "./base/Model";
-import { ICardsData, ICard, IOrder, IProduct } from "../types";
-import { Card } from "./Card";
+import { ICardsData, ICard, IProduct } from "../types";
+
 
 export class CardsData extends Model<ICardsData> {
 

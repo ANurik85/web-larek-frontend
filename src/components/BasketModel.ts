@@ -1,4 +1,5 @@
-import { ICard, IProduct } from "../types";
+import { IProduct } from "../types";
+
 
 export interface IBasketModel {
   items: Map<string, number>;
@@ -58,5 +59,23 @@ export class BasketModel implements IBasketModel {
   updateItemCount() {
     const itemCount = this.getItemCount();
     this.events.emit('basket:update', { itemCount });
+  }
+  
+ 
+  calculateTotal(): number { 
+    return this.basket.reduce((sum, item) => { 
+      const priceText = item.price; 
+      if (!isNaN(parseFloat(priceText))) {
+        const price = parseFloat(priceText);
+        return sum + price; 
+      } else {
+        return sum;
+      }
+    }, 0); 
+  }
+
+  updateTotal() {
+    const total = this.calculateTotal();
+    this.events.emit('basket:updateTotal', { total });
   }
 }
