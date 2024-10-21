@@ -28,6 +28,8 @@ export class BasketItemView implements IView {
     this.removeButton.addEventListener('click', () => {
       this.events.emit('basket:remove', { id: this.id });
     });
+
+
   }
 
   // Метод для получения значения id
@@ -52,10 +54,11 @@ export class BasketItemView implements IView {
     this.indexNumber.textContent = `${number}`;
   }
 
-  render(data: { id: string, title: string, price: string }) {
+  render(data: { id: string, indexNumber: number, title: string, price: string }) {
     if (data) {
       // если есть новое данные, то запомним их
       this.id = data.id;
+      this.indexNumber.textContent = `${data.indexNumber}`;
       // и выведем в интерфейс
       this.title.textContent = data.title;
       this.price.textContent = (data.price === null) ? 'безценно' : `${data.price} синапсов`;

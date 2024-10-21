@@ -10,7 +10,7 @@ import { cloneTemplate, createElement, ensureElement } from "./utils/utils";
 import { Modal } from "./components/common/Modal";
 import { BasketView } from "./components/BasketView";
 import { BasketItemView } from "./components/BasketItemView";
-import { IFormAddress, IFormContacts, ICard } from "./types";
+import { IFormAddress, IFormContacts, ICard, IProduct } from "./types";
 import { Order } from "./components/Order";
 import { Success } from "./components/Success";
 import { BasketModel } from './components/BasketModel';
@@ -44,7 +44,7 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const order = new Order(cloneTemplate(orderContactsTemplate), events);
 const orderAddress = new OrderAddress(cloneTemplate(orderAddressTemplate), events);
 const basketModel = new BasketModel(events);
-const basketCatalogModel = new BasketCatalogModel();
+const basketCatalogModel = new BasketCatalogModel(events);
 const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
 const basketView = new BasketView(cloneTemplate(basketTemplate), events);
 const orderModel = new OrderModel(events, basketModel);
@@ -68,7 +68,7 @@ events.on('items:changed', () => {
     // Обновление счетчика корзины
     const itemCount = basketModel.getItemCount();
     page.counter = itemCount;
-    
+
 });
 
 
@@ -83,13 +83,13 @@ events.on('order:submit', (finalOrderData: any) => {
     //     const basketModel = new BasketModel(events);
     //     const total = basketModel.calculateTotal();
     //     const items = basketModel.getItems().map(item => item.id);
-      
+
     //     const finalOrderData = {
     //       ...orderData,
     //       total,
     //       items
     //     };
-      
+
     api.orderCards(finalOrderData)
         .then((result) => {
             const success = new Success(cloneTemplate(successTemplate), {
@@ -140,6 +140,10 @@ events.on(/^order\..*:change/, (data: { field: keyof IFormAddress, value: string
 
 // Открыть форму заказа способа оплаты
 events.on('address:open', () => {
+    console.log('Событие address:open эмитировано');
+    console.log('events:', events);
+    console.log('modal:', modal);
+    console.log('orderAddress:', orderAddress);
     modal.render({
         content: orderAddress.render({
             address: '',
@@ -152,6 +156,8 @@ events.on('address:open', () => {
 
 // Открыть форму заказа контакты
 events.on('order:open', () => {
+    console.log('Событие order:open эмитировано');
+    console.log('events:', events);
     modal.render({
         content: order.render({
             phone: '',
@@ -167,36 +173,35 @@ events.on('basket:add', (event: { id: string }) => {
     if (!cardId) {
         return;
     }
-    // Проверка, есть ли карточка в корзине
-    const isCardInBasket = basketView.items.some(item => item.getId() === cardId);
-    if (isCardInBasket) {
-        return;
-    }
     const cardItem = cardsData.getCardItem(cardId);
-    const basketItem = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
-    basketItem.render(cardItem);
-    basketView.items.push(basketItem);
-    // Обновление порядковых номеров после добавления карточки
-    basketView.items.forEach((item, index) => {
-        item.setIndexNumber(index + 1);
-    });
-    modal.close();
-    const card = { id: cardId, title: cardItem.title, price: cardItem.price };
-    const result = basketModel.addToBasket(card);
+     basketModel.addToBasket({ id: cardId, indexNumber: basketModel.getItemCount() + 1, title: cardItem.title, price: cardItem.price });
     basketModel.updateItemCount();
-
+    modal.close();
 });
 
-// Открыть корзину
+
+
 events.on('basket:open', () => {
-    // Преобразуем каждый элемент в items в HTMLElement
-    const itemsAsHtmlElements = basketView.items.map(item => item.getElement());
-    modal.render({
-        content: basketView.render({
-            items: itemsAsHtmlElements
-        })
+    const basketContent = cloneTemplate(basketTemplate) as HTMLElement;
+    const basketList = basketContent.querySelector('.basket__list');
+
+    const cardBasketArray = basketModel.basket.map(product => {
+        const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
+        basketItemView.render(product);
+        return basketItemView.getElement();
     });
 
+    cardBasketArray.forEach(element => {
+        basketList.appendChild(element);
+    });
+
+    const total = basketModel.calculateTotal();
+
+    const basketView = new BasketView(basketContent, events);
+    modal.render({
+        content: basketView.render({ items: cardBasketArray, total })
+    });
+    basketModel.updateItemCount();
 });
 
 
@@ -204,11 +209,11 @@ events.on('basket:open', () => {
 events.on('card:select', (item: ICard) => {
     const showItem = (item: ICard) => {
         const card = new Card(cloneTemplate(cardPreviewTemplate), events);
-        const modalContent = card.render({...item});
+        const modalContent = card.render({ ...item });
 
         modal.render({ content: modalContent });
 
-    
+
     };
 
     if (item) {
@@ -242,20 +247,30 @@ events.on('basket:change', (data: { items: string[] }) => {
 });
 
 
+
 events.on('basket:remove', (event: { id: string }) => {
-    const cardId = event.id;
-    basketModel.removeCard(cardId);
-
-    // Обновляем представление корзины после удаления одного элемента
-    basketView.items = basketView.items.filter(item => item.getId() !== cardId);
-
-    // Рендерим обновленную корзину
-    const itemsAsHtmlElements = basketView.items.map(item => item.getElement());
+        basketModel.removeCard(event.id);
+    page.counter = basketModel.getItemCount();
+    const cardBasketArray = basketModel.basket.filter((card) => card.id !== event.id).map((card, index) => {
+            const cardBasket = new BasketItemView(
+                cloneTemplate(cardBasketTemplate),
+                events
+            );
+            return cardBasket.render({
+                id: card.id,
+                title: card.title,
+                price: card.price,
+                indexNumber: index + 1,
+            });
+        });
     modal.render({
-        content: basketView.render({ items: itemsAsHtmlElements })
+        content: basketView.render({
+            items: cardBasketArray,
+            total: basketModel.calculateTotal(),
+        }),
     });
-
 });
+
 
 // Получаем список карточки с сервера
 api.getCardList()

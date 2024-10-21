@@ -10,7 +10,7 @@ export class CardsData extends Model<ICardsData> {
   preview: string | null = null;
   static getCardItem: string;
 
-  getCardItem(id: string): IProduct | undefined {
+  getCardItem(id: string): ICard | undefined {
     const card = this.catalog.find((item) => item.id === id);
 
     return card;

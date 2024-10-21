@@ -2,7 +2,8 @@ import { IProduct } from "../types";
 
 
 export interface IBasketModel {
-  items: Map<string, number>;
+  // items: Map<string, number>;
+  basket: IProduct[];
   getItems(): { id: string, quantity: number }[]
 }
 
@@ -11,22 +12,20 @@ interface EventEmitter {
 }
 
 export class BasketModel implements IBasketModel {
-  items: Map<string, number> = new Map();
+  // items: Map<string, number> = new Map();
   basket: IProduct[] = [];
 
   constructor(protected events: EventEmitter) { }
 
   addToBasket(cardId: IProduct): boolean {
-
     const index = this.basket.findIndex(item => item.id === cardId.id);
     if (index === -1) {
-      this.basket.push(cardId);
-      this.items.set(cardId.id, 1);
+      this.basket.push({ id: cardId.id.toString(), title: cardId.title, price: cardId.price, indexNumber: cardId.indexNumber });
       this.updateItemCount();
       return true;
     } else {
-      const currentQuantity = this.items.get(cardId.id) || 0;
-      this.items.set(cardId.id, currentQuantity + 1);
+      const currentQuantity = this.basket.find(item => item.id === cardId.id)?.indexNumber || 0;
+      this.basket = this.basket.map(item => item.id === cardId.id ? { ...item, quantity: item.indexNumber + 1 } : item);
       this.updateItemCount();
       return false;
     }
@@ -34,30 +33,35 @@ export class BasketModel implements IBasketModel {
   
   removeCard(cardId: string) {
     this.basket = this.basket.filter(card => card.id !== cardId);
-    this.items.delete(cardId);
-    this.events.emit('basket:remove', { id: cardId });
+    // this.basket.delete(cardId);
     this.updateItemCount();
-  }
-
-  clearBasket(): void {
+    
+  this.updateTotal();
+  this.events.emit('basket:update', { total: this.calculateTotal() }); // добавьте этот вызов
+  };
+  
+  clearBasket(): void { 
     this.basket.forEach(card => {
       this.removeCard(card.id);
     });
     this.basket = [];
     this.updateItemCount();
+    this.updateTotal();
+    this.events.emit('basket:updated', { total: this.calculateTotal() });
   }
 
   getItems(): { id: string, quantity: number }[] {
-    return Array.from(this.items.entries()).map(([id, quantity]) => ({ id, quantity }));
+    return this.basket.map((item, index) => ({ id: item.id, quantity: 1 }));
   }
 
   getItemCount(): number {
-    return this.items.size;
+    return this.basket.length;
   }
 
   // Обновляем отображение количества карточек в корзине
   updateItemCount() {
     const itemCount = this.getItemCount();
+    this.updateTotal();
     this.events.emit('basket:update', { itemCount });
   }
   

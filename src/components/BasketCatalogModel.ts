@@ -1,5 +1,6 @@
 
 import { IProduct } from "../types";
+import { EventEmitter } from "./base/events";
 
 // модул католог товара для корзину
 
@@ -12,6 +13,9 @@ export interface IBasketCatalog {
 export class BasketCatalogModel implements IBasketCatalog {
   catalog: IProduct[] = [];
   static getProduct: (id: string) => IProduct;
+
+
+  constructor(protected events: EventEmitter) { }
   setItems(items: IProduct[]): void {
     this.catalog = items;
   }
@@ -20,9 +24,6 @@ export class BasketCatalogModel implements IBasketCatalog {
     return this.catalog.find(item => item.id === id);
 
   }
-  getTotal(): number {
-    return this.catalog.reduce((total, product) => total + Number(product.price), 0);
-
-  }
+ 
 }
 
