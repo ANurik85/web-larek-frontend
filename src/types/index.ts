@@ -33,7 +33,7 @@ export interface IFormContacts {
 
 export interface IFormAddress {
   address: string;
-  paymentMethod: string;
+  payment: string;
 
 }
 

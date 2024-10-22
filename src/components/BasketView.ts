@@ -27,8 +27,7 @@ export class BasketView extends Component<IBasketView> {
 
     if (this._button) {
       this._button.addEventListener('click', () => {
-        console.log('Кнопка basket__button кликнута');
-        console.log('events:', events);
+       
         events.emit('address:open');
       });
     }
@@ -37,7 +36,7 @@ export class BasketView extends Component<IBasketView> {
       this.setTotal(total);
     });
 
-    
+    this.checkIfEmpty();
     this.items = [];
   }
 
@@ -55,7 +54,24 @@ export class BasketView extends Component<IBasketView> {
     return this.container;
   }
   
- 
+ // Метод для проверки состояния корзины
+ checkIfEmpty() {
+  const isEmpty = this._list.children.length === 0;
+  if (isEmpty) {
+    this._button.disabled = true;
+  } else {
+    this._button.disabled = false;
+  }
+
 }
 
+render(data: { items: HTMLElement[], total: number }) {
+  if (data) {
+    this.setTotal(data.total);
+    this._list.replaceChildren(...data.items);
+    this.checkIfEmpty(); 
+  }
+  return this.container;
+}
+}
 

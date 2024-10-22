@@ -29,7 +29,6 @@ export class BasketItemView implements IView {
       this.events.emit('basket:remove', { id: this.id });
     });
 
-
   }
 
   // Метод для получения значения id

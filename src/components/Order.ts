@@ -4,7 +4,7 @@ import { EventEmitter, IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
 
 export class Order extends Form<IOrderResult> {
- 
+  protected _button: HTMLElement;
   order: IFormContacts = {
     email: '',
     phone: '',
@@ -14,6 +14,7 @@ export class Order extends Form<IOrderResult> {
 
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container, events);
+
 
   }
 

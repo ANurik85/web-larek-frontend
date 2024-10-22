@@ -48,6 +48,7 @@ const basketCatalogModel = new BasketCatalogModel(events);
 const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
 const basketView = new BasketView(cloneTemplate(basketTemplate), events);
 const orderModel = new OrderModel(events, basketModel);
+const success = new Success(cloneTemplate(successTemplate), events)
 // Дальше идет бизнес-логика
 // Поймали событие, сделали что нужно
 
@@ -71,42 +72,44 @@ events.on('items:changed', () => {
 
 });
 
-
-
-// const orderForm = new Order(document.querySelector('.contacts') as HTMLFormElement, events);
-// const addressForm = new OrderAddress(document.querySelector('.order') as HTMLFormElement, events);
-
 // Отправлена форма заказа
-events.on('order:submit', (finalOrderData: any) => {
 
-    // events.on('order:submit', (orderData: Partial<IOrderContacts> & Partial<IOrderAddress>) => {
-    //     const basketModel = new BasketModel(events);
-    //     const total = basketModel.calculateTotal();
-    //     const items = basketModel.getItems().map(item => item.id);
+events.on('contacts:submit', () => {
+    const total = basketModel.calculateTotal();
+    // получеам список id карточки добавленние в корзину
+    const items = basketModel.basket.map(item => item.id);
 
-    //     const finalOrderData = {
-    //       ...orderData,
-    //       total,
-    //       items
-    //     };
+    const finalOrderData = {
+        ...order.order,
+        ...orderAddress.order,
+        total,
+        items,
+
+    };
 
     api.orderCards(finalOrderData)
         .then((result) => {
-            const success = new Success(cloneTemplate(successTemplate), {
-                onClick: () => {
-                    modal.close();
-                    basketModel.clearBasket();
-                    events.emit('order:success');
-                }
-            });
+
+            const success = new Success(cloneTemplate(successTemplate), events);
 
             modal.render({
-                content: success.render({})
+                content: success.render({ total: basketModel.calculateTotal() }),
+
             });
         })
         .catch(err => {
+
             console.error(err);
         });
+});
+
+// Открыть окно подтверждение
+events.on('order:success', () => {
+
+    modal.render({
+        content: success.render({ total: basketModel.calculateTotal() }),
+
+    });
 });
 
 
@@ -119,11 +122,11 @@ events.on('formErrors:change', (errors: Partial<IFormContacts>) => {
 
 // Изменилось состояние валидации формы
 events.on('formErrors:change', (errors: Partial<IFormAddress>) => {
-    const { address, paymentMethod } = errors;
-    orderAddress.valid = !address && !paymentMethod;
-    orderAddress.errors = Object.values({ address, paymentMethod }).filter(i => !!i).join('; ');
-    if (!paymentMethod) {
-        orderAddress.paymentMethod = 'card'; // или 'cash'
+    const { address, payment } = errors;
+    orderAddress.valid = !address && !payment;
+    orderAddress.errors = Object.values({ address, payment }).filter(i => !!i).join('; ');
+    if (!payment && !orderAddress.payment) {
+        orderAddress.payment = 'card';
     }
 });
 
@@ -140,14 +143,11 @@ events.on(/^order\..*:change/, (data: { field: keyof IFormAddress, value: string
 
 // Открыть форму заказа способа оплаты
 events.on('address:open', () => {
-    console.log('Событие address:open эмитировано');
-    console.log('events:', events);
-    console.log('modal:', modal);
-    console.log('orderAddress:', orderAddress);
+
     modal.render({
         content: orderAddress.render({
             address: '',
-            paymentMethod: '',
+            payment: '',
             valid: false,
             errors: []
         })
@@ -156,8 +156,6 @@ events.on('address:open', () => {
 
 // Открыть форму заказа контакты
 events.on('order:open', () => {
-    console.log('Событие order:open эмитировано');
-    console.log('events:', events);
     modal.render({
         content: order.render({
             phone: '',
@@ -168,18 +166,18 @@ events.on('order:open', () => {
     });
 });
 
+
 events.on('basket:add', (event: { id: string }) => {
     const cardId = event.id;
     if (!cardId) {
         return;
     }
     const cardItem = cardsData.getCardItem(cardId);
-     basketModel.addToBasket({ id: cardId, indexNumber: basketModel.getItemCount() + 1, title: cardItem.title, price: cardItem.price });
+    basketModel.addToBasket({ id: cardId, indexNumber: basketModel.getItemCount() + 1, title: cardItem.title, price: cardItem.price });
     basketModel.updateItemCount();
+    basketModel.updateTotal();
     modal.close();
 });
-
-
 
 events.on('basket:open', () => {
     const basketContent = cloneTemplate(basketTemplate) as HTMLElement;
@@ -198,10 +196,15 @@ events.on('basket:open', () => {
     const total = basketModel.calculateTotal();
 
     const basketView = new BasketView(basketContent, events);
+    // Проверка состояния корзины и установка состояния кнопки
+    basketView.items = cardBasketArray;
+    basketView.checkIfEmpty(); // Вызываем метод для проверки состояния корзины
+
     modal.render({
         content: basketView.render({ items: cardBasketArray, total })
     });
     basketModel.updateItemCount();
+    basketModel.updateTotal();
 });
 
 
@@ -211,8 +214,41 @@ events.on('card:select', (item: ICard) => {
         const card = new Card(cloneTemplate(cardPreviewTemplate), events);
         const modalContent = card.render({ ...item });
 
-        modal.render({ content: modalContent });
+        // Найдём кнопку и добавим функционал
+        const addButtonCard = modalContent.querySelector('.card__button');
+        const product = basketModel.basket.find((product: IProduct) => product.id === item.id);
+    if (addButtonCard) {
+      const updateButtonState = () => {
+        
+        addButtonCard.textContent = product ? 'Удалить из корзину' : 'В корзину';
+      };
 
+            // Установим начальное состояние кнопки
+      updateButtonState();
+      
+      addButtonCard.addEventListener('click', async () => {
+        try {
+            
+            if (product) {
+               basketModel.removeCard(item.id);
+            
+              events.emit('basket:remove', { id: item.id });
+             
+              modal.close();
+            } else {
+            basketModel.addToBasket({ id: item.id, indexNumber: basketModel.getItemCount() + 1, title: item.title, price: item.price });
+            events.emit('basket:add', { id: item.id });
+            
+          }
+          updateButtonState();
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    }
+
+        modal.render({ content: modalContent });
+       
 
     };
 
@@ -242,6 +278,11 @@ events.on('modal:close', () => {
     page.locked = false;
 });
 
+// Закрываем модалку Success
+events.on('success:close', () => {
+    modal.close();
+});
+
 events.on('basket:change', (data: { items: string[] }) => {
     // выводим куда-то
 });
@@ -249,26 +290,28 @@ events.on('basket:change', (data: { items: string[] }) => {
 
 
 events.on('basket:remove', (event: { id: string }) => {
-        basketModel.removeCard(event.id);
+    basketModel.removeCard(event.id);
     page.counter = basketModel.getItemCount();
     const cardBasketArray = basketModel.basket.filter((card) => card.id !== event.id).map((card, index) => {
-            const cardBasket = new BasketItemView(
-                cloneTemplate(cardBasketTemplate),
-                events
-            );
-            return cardBasket.render({
-                id: card.id,
-                title: card.title,
-                price: card.price,
-                indexNumber: index + 1,
-            });
+        const cardBasket = new BasketItemView(
+            cloneTemplate(cardBasketTemplate),
+            events
+        );
+        return cardBasket.render({
+            id: card.id,
+            title: card.title,
+            price: card.price,
+            indexNumber: index + 1,
         });
+    });
     modal.render({
         content: basketView.render({
             items: cardBasketArray,
             total: basketModel.calculateTotal(),
         }),
     });
+    basketModel.updateItemCount();
+    basketModel.updateTotal();
 });
 
 

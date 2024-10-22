@@ -33,7 +33,9 @@ export class BasketModel implements IBasketModel {
   
   removeCard(cardId: string) {
     this.basket = this.basket.filter(card => card.id !== cardId);
-    // this.basket.delete(cardId);
+    this.basket.forEach((product, index) => {
+      product.indexNumber = index + 1;
+    });
     this.updateItemCount();
     
   this.updateTotal();
