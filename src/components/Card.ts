@@ -1,6 +1,6 @@
 import { Component } from "./base/Component";
 import { ICard } from "../types";
-import { createElement, ensureElement, formatNumber } from "../utils/utils";
+import { ensureElement } from "../utils/utils";
 import { IEvents } from "./base/events";
 
 export class Card extends Component<ICard> {
@@ -27,12 +27,7 @@ export class Card extends Component<ICard> {
             this._button.addEventListener('click', () => {
                 this.events.emit('basket:add', { id: this.id });
             });
-        // }
-        // else {
-        //     container.addEventListener('click', () => {
-                
-               
-        // });
+
         }
     }
 
@@ -54,11 +49,11 @@ export class Card extends Component<ICard> {
 
     set price(value: string | null) {
         if (value === null) {
-          this.setText(this._price, 'безценно');
+            this.setText(this._price, 'безценно');
         } else {
-          this.setText(this._price, `${value} синапсов`);
+            this.setText(this._price, `${value} синапсов`);
         }
-      }
+    }
 
     get price(): string {
         return this._price.textContent || '';

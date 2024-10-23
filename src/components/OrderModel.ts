@@ -1,6 +1,5 @@
-import { EventEmitter, IEvents } from "./base/events";
-import { ensureElement } from "../utils/utils";
-import { IFormAddress, IFormContacts, IOrderResult } from "../types";
+import { EventEmitter } from "./base/events";
+import { IFormAddress, IFormContacts } from "../types";
 import { BasketModel } from "./BasketModel";
 
 export class OrderModel {
@@ -11,7 +10,7 @@ export class OrderModel {
 
   constructor(private events: EventEmitter, private basketModel: BasketModel) {
     this.events.on('order:ready', this.updateContacts.bind(this));
-    this.events.on('_address:ready', this.updateAddress.bind(this));
+    this.events.on('address:ready', this.updateAddress.bind(this));
     this.events.on('basket:updateTotal', this.updateTotal.bind(this));
   }
 
@@ -43,7 +42,7 @@ export class OrderModel {
         _total: this._total,
         _items: this._items.map(item => item)
       };
-      this.events.emit('order:submit', finalOrderData);
+      this.events.emit('contacts:submit', finalOrderData);
     }
   }
 }

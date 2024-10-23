@@ -10,7 +10,7 @@ interface ISuccess {
 export class Success extends Component<ISuccess> {
     protected _close: HTMLElement;
     protected _total: HTMLElement;
-    
+
 
     constructor(container: HTMLElement, events: IEvents) {
         super(container);
@@ -20,10 +20,10 @@ export class Success extends Component<ISuccess> {
 
         if (this._close) {
             this._close.addEventListener('click', () => {
-              
+
                 events.emit('success:close');
             });
-          }
+        }
     }
     set total(total: number) {
         const text = this._total.innerText;

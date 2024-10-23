@@ -12,7 +12,7 @@ export interface IProduct {
   title: string;
   price: string;
   indexNumber: number;
-   
+
 }
 
 export interface ICardsData {
@@ -43,6 +43,6 @@ export interface IOrder {
 
 export type FormErrors = Partial<Record<keyof (IFormAddress & IFormContacts), string>>;
 
-export interface IOrderResult extends IFormAddress, IFormContacts, IOrder  {
+export interface IOrderResult extends IFormAddress, IFormContacts, IOrder {
   total: number;
 }

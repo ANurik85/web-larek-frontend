@@ -1,11 +1,4 @@
-import { IProduct } from "../types";
-import { ensureElement } from "../utils/utils";
 import { EventEmitter } from "././base/events";
-
-// класс отображение, и реализация отдельного товара в корзину
-interface IViewConstructor {
-  new(container: HTMLElement, events?: EventEmitter): IView; // на входе контейнер, в него будем выводить
-}
 export interface IView {
   render(data?: object): HTMLElement; // устанавливаем данные, возвращаем контейнер
 }
@@ -15,7 +8,7 @@ export class BasketItemView implements IView {
   title: HTMLSpanElement;
   price: HTMLSpanElement;
   protected removeButton: HTMLButtonElement;
-  protected indexNumber: HTMLSpanElement; // Порядковый номер
+  protected indexNumber: HTMLSpanElement;
   // данные, которое хотим сохранить на будущее
   protected id: string | null = null;
 

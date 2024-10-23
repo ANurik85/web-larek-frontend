@@ -1,4 +1,4 @@
-import {IEvents} from "./events";
+import { IEvents } from "./events";
 
 // Гарда для проверки на модель
 export const isModel = (obj: unknown): obj is Model<any> => {
@@ -20,5 +20,5 @@ export abstract class Model<T> {
     }
 
     // далее можно добавить общие методы для моделей
-    
+
 }

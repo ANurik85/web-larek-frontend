@@ -1,8 +1,7 @@
 import { IProduct } from "../types";
 
-
 export interface IBasketModel {
-  // items: Map<string, number>;
+
   basket: IProduct[];
   getItems(): { id: string, quantity: number }[]
 }
@@ -12,7 +11,7 @@ interface EventEmitter {
 }
 
 export class BasketModel implements IBasketModel {
-  // items: Map<string, number> = new Map();
+
   basket: IProduct[] = [];
 
   constructor(protected events: EventEmitter) { }
@@ -24,25 +23,24 @@ export class BasketModel implements IBasketModel {
       this.updateItemCount();
       return true;
     } else {
-      const currentQuantity = this.basket.find(item => item.id === cardId.id)?.indexNumber || 0;
       this.basket = this.basket.map(item => item.id === cardId.id ? { ...item, quantity: item.indexNumber + 1 } : item);
       this.updateItemCount();
       return false;
     }
   }
-  
+
   removeCard(cardId: string) {
     this.basket = this.basket.filter(card => card.id !== cardId);
     this.basket.forEach((product, index) => {
       product.indexNumber = index + 1;
     });
     this.updateItemCount();
-    
-  this.updateTotal();
-  this.events.emit('basket:update', { total: this.calculateTotal() }); // добавьте этот вызов
+
+    this.updateTotal();
+    this.events.emit('basket:update', { total: this.calculateTotal() });
   };
-  
-  clearBasket(): void { 
+
+  clearBasket(): void {
     this.basket.forEach(card => {
       this.removeCard(card.id);
     });
@@ -53,7 +51,7 @@ export class BasketModel implements IBasketModel {
   }
 
   getItems(): { id: string, quantity: number }[] {
-    return this.basket.map((item, index) => ({ id: item.id, quantity: 1 }));
+    return this.basket.map((item) => ({ id: item.id, quantity: 1 }));
   }
 
   getItemCount(): number {
@@ -66,22 +64,25 @@ export class BasketModel implements IBasketModel {
     this.updateTotal();
     this.events.emit('basket:update', { itemCount });
   }
-  
- 
-  calculateTotal(): number { 
-    return this.basket.reduce((sum, item) => { 
-      const priceText = item.price; 
+
+
+  calculateTotal(): number {
+    return this.basket.reduce((sum, item) => {
+      const priceText = item.price;
       if (!isNaN(parseFloat(priceText))) {
         const price = parseFloat(priceText);
-        return sum + price; 
+        return sum + price;
       } else {
         return sum;
       }
-    }, 0); 
+    }, 0);
   }
 
   updateTotal() {
     const total = this.calculateTotal();
     this.events.emit('basket:updateTotal', { total });
   }
+
+
+
 }

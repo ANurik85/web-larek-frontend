@@ -1,4 +1,3 @@
-
 import { IProduct } from "../types";
 import { EventEmitter } from "./base/events";
 

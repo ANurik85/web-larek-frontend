@@ -1,7 +1,6 @@
 import { Form } from "./common/Form";
 import { FormErrors, IFormContacts, IOrderResult } from "../types";
-import { EventEmitter, IEvents } from "./base/events";
-import { ensureElement } from "../utils/utils";
+import { IEvents } from "./base/events";
 
 export class Order extends Form<IOrderResult> {
   protected _button: HTMLElement;
@@ -10,7 +9,7 @@ export class Order extends Form<IOrderResult> {
     phone: '',
   };
   formErrors: FormErrors = {};
-  
+
 
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container, events);
