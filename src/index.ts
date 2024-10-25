@@ -14,7 +14,6 @@ import { IFormAddress, IFormContacts, ICard, IProduct } from "./types";
 import { Order } from "./components/Order";
 import { Success } from "./components/Success";
 import { BasketModel } from './components/BasketModel';
-import { BasketCatalogModel } from './components/BasketCatalogModel';
 import { OrderAddress } from './components/OrderAddress';
 
 const events = new EventEmitter();
@@ -43,9 +42,9 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const order = new Order(cloneTemplate(orderContactsTemplate), events);
 const orderAddress = new OrderAddress(cloneTemplate(orderAddressTemplate), events);
 const basketModel = new BasketModel(events);
-const basketCatalogModel = new BasketCatalogModel(events);
 const basketView = new BasketView(cloneTemplate(basketTemplate), events);
 const success = new Success(cloneTemplate(successTemplate), events)
+const card = new Card(cloneTemplate(cardPreviewTemplate), events);
 
 // Дальше идет бизнес-логика
 // Поймали событие, сделали что нужно
@@ -85,10 +84,11 @@ events.on('contacts:submit', () => {
 
     api.orderCards(finalOrderData)
         .then(() => {
-            const success = new Success(cloneTemplate(successTemplate), events);
+
             modal.render({
                 content: success.render({ total: basketModel.calculateTotal() }),
             });
+            
             basketModel.clearBasket();
         })
         .catch(err => {
@@ -154,6 +154,13 @@ events.on('order:success', () => {
     });
 });
 
+
+// удаление карточки из корзину
+events.on('basket:remove', (event: { id: string }) => {
+    basketModel.removeCard(event.id);
+    events.emit('basket:change');
+});
+
 // добавление карточки в корзину
 events.on('basket:add', (event: { id: string }) => {
     const cardId = event.id;
@@ -162,16 +169,13 @@ events.on('basket:add', (event: { id: string }) => {
     }
     const cardItem = cardsData.getCardItem(cardId);
     basketModel.addToBasket({ id: cardId, indexNumber: basketModel.getItemCount() + 1, title: cardItem.title, price: cardItem.price });
-    basketModel.updateItemCount();
-    basketModel.updateTotal();
-    modal.close();
+    events.emit('basket:change');
+    modal.close(); 
 });
 
-// удаление карточки из корзину
-events.on('basket:remove', (event: { id: string }) => {
-    basketModel.removeCard(event.id);
-    page.counter = basketModel.getItemCount();
-    const cardBasketArray = basketModel.basket.filter((card) => card.id !== event.id).map((card, index) => {
+// событие изменения корзины
+events.on('basket:change', () => {
+    const cardBasketArray = basketModel.basket.map((card, index) => {
         const cardBasket = new BasketItemView(
             cloneTemplate(cardBasketTemplate),
             events
@@ -197,51 +201,40 @@ events.on('basket:remove', (event: { id: string }) => {
 events.on('basket:open', () => {
     const basketContent = cloneTemplate(basketTemplate) as HTMLElement;
     const basketList = basketContent.querySelector('.basket__list');
-
     const cardBasketArray = basketModel.basket.map(product => {
         const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
         basketItemView.render(product);
         return basketItemView.getElement();
     });
-
     cardBasketArray.forEach(element => {
         basketList.appendChild(element);
     });
-
     const total = basketModel.calculateTotal();
     const basketView = new BasketView(basketContent, events);
-    // Проверка состояния корзины и установка состояния кнопки
     basketView.items = cardBasketArray;
     modal.render({
         content: basketView.render({ items: cardBasketArray, total })
     });
-    basketModel.updateItemCount();
-    basketModel.updateTotal();
 });
 
 // Открыть выбранный карточки
 events.on('card:select', (item: ICard) => {
     const showItem = (item: ICard) => {
-        const card = new Card(cloneTemplate(cardPreviewTemplate), events);
         const modalContent = card.render({ ...item });
-
-        // Найдём кнопку и добавим функционал
-        const addButtonCard = modalContent.querySelector('.card__button');
         const product = basketModel.basket.find((product: IProduct) => product.id === item.id);
 
-        if (addButtonCard) {
+        if (card.button) {
             const updateButtonState = () => {
-                addButtonCard.textContent = product ? 'Удалить из корзину' : 'В корзину';
+                card.button.textContent = product ? 'Удалить из корзину' : 'В корзину';
             };
             updateButtonState();
-            addButtonCard.addEventListener('click', async () => {
+            card.button.addEventListener('click', () => {
                 try {
                     if (product) {
-                        basketModel.removeCard(item.id);
                         events.emit('basket:remove', { id: item.id });
                         modal.close();
                     } else {
-                        basketModel.addToBasket({ id: item.id, indexNumber: basketModel.getItemCount() + 1, title: item.title, price: item.price });
+                        
                         events.emit('basket:add', { id: item.id });
                     }
                     updateButtonState();
@@ -273,8 +266,9 @@ events.on('success:close', () => {
 
 // Получаем список карточки с сервера
 api.getCardList()
-    .then(cardsData.setCatalog.bind(cardsData))
-    .then(basketCatalogModel.setItems.bind(basketCatalogModel))
-    .catch(err => {
-        console.error(err);
-    });
+.then((cards) => {
+  cardsData.setCatalog(cards);
+})
+.catch((err) => {
+  console.error(err);
+});

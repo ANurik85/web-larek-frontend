@@ -11,25 +11,6 @@ export const testForm = {
 	};
 
 
-export const testItemCard = [
-	{
-		id: '854cef69-976d-4c2a-a18c-2aa45046c470',
-		description: 'Если планируете .',
-		image: '/5_Dots.svg',
-		title: '+1 час ',
-		category: 'софт',
-		price: 70,
-	},
-	{
-		id: '854cef69-976d-4c2a-a18c-2aa45046c470',
-		description: 'Если планируете .',
-		image: '/5_Dots.svg',
-		title: '+1 час ',
-		category: 'софт',
-		price: 70,
-	}
-]
-
 export const testCards = [
 	{
 		total: 10,

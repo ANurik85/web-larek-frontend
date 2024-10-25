@@ -1,5 +1,5 @@
 import { Component } from "./base/Component";
-import { ICard } from "../types";
+import { ICard, IProduct } from "../types";
 import { ensureElement } from "../utils/utils";
 import { IEvents } from "./base/events";
 
@@ -11,7 +11,6 @@ export class Card extends Component<ICard> {
     protected _price: HTMLElement;
     protected _category: HTMLElement;
 
-
     constructor(protected container: HTMLElement, protected events: IEvents) {
         super(container);
 
@@ -22,13 +21,17 @@ export class Card extends Component<ICard> {
         this._price = container.querySelector(`.card__price`);
         this._category = container.querySelector(`.card__category`);
 
-
         if (this._button) {
             this._button.addEventListener('click', () => {
                 this.events.emit('basket:add', { id: this.id });
             });
-
         }
+    }
+
+
+
+    public get button() {
+        return this._button;
     }
 
     set id(value: string) {
@@ -61,7 +64,29 @@ export class Card extends Component<ICard> {
 
     set category(value: string) {
         this.setText(this._category, value);
+        // Удаляем предыдущие классы категории
+        this._category.classList.remove('card__category_soft', 'card__category_other', 'card__category_additional', 'card__category_button', 'card__category_hard');
+
+        // Добавляем новый класс категории
+        switch (value.trim()) {
+            case 'софт-скил':
+                this._category.classList.add('card__category_soft');
+                break;
+            case 'другое':
+                this._category.classList.add('card__category_other');
+                break;
+            case 'дополнительное':
+                this._category.classList.add('card__category_additional');
+                break;
+            case 'кнопка':
+                this._category.classList.add('card__category_button');
+                break;
+            case 'хард-скил':
+                this._category.classList.add('card__category_hard');
+                break;
+        }
     }
+
 
     get category(): string {
         return this._category.textContent || '';
