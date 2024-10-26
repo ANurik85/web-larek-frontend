@@ -55,6 +55,7 @@ export class BasketItemView implements IView {
       this.title.textContent = data.title;
       this.price.textContent = (data.price === null) ? 'безценно' : `${data.price} синапсов`;
     }
+   
     return this.container;
   }
 }

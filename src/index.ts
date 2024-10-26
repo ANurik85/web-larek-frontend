@@ -35,7 +35,6 @@ const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 // Модель данных приложения
 const cardsData = new CardsData({}, events);
-
 // Глобальные контейнеры
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
@@ -84,17 +83,28 @@ events.on('contacts:submit', () => {
 
     api.orderCards(finalOrderData)
         .then(() => {
-
+          
             modal.render({
                 content: success.render({ total: basketModel.calculateTotal() }),
             });
             
             basketModel.clearBasket();
+            // basketView.render({ items: [], total: 0 }); // вызов render() корзины
         })
+        
         .catch(err => {
             console.error(err);
         });
 });
+
+
+events.on('basket:update', (event: { itemCount: number }) => {
+    console.log('Обработчик события basket:update вызван');
+    console.log('Количество товаров в корзине:', event.itemCount);
+    // Обновите интерфейс пользователя с новым количеством товаров в корзине
+    basketView.render({ items: [], total: 0 });
+    console.log('Корзина отображена:', basketView);
+  });
 
 // Изменилось состояние валидации формы
 events.on('formErrors:change', (errors: Partial<IFormContacts>) => {
@@ -158,23 +168,38 @@ events.on('order:success', () => {
 // удаление карточки из корзину
 events.on('basket:remove', (event: { id: string }) => {
     basketModel.removeCard(event.id);
+    // const index = basketModel.basket.findIndex(item => item.id === event.id);
+    // if (index !== -1) {
+    //     basketModel.basket.splice(index, 1);
+    // }
+    
     events.emit('basket:change');
+    basketModel.updateItemCount();
+    
 });
 
 // добавление карточки в корзину
 events.on('basket:add', (event: { id: string }) => {
     const cardId = event.id;
-    if (!cardId) {
-        return;
-    }
+    if (!cardId) return;
+  
     const cardItem = cardsData.getCardItem(cardId);
-    basketModel.addToBasket({ id: cardId, indexNumber: basketModel.getItemCount() + 1, title: cardItem.title, price: cardItem.price });
+    basketModel.addToBasket({
+      id: cardId,
+      indexNumber: basketModel.getItemCount() + 1,
+      title: cardItem.title,
+      price: cardItem.price
+    });
+  
     events.emit('basket:change');
-    modal.close(); 
-});
-
+    basketModel.updateItemCount();
+    modal.close();
+  });
+  
+  
 // событие изменения корзины
 events.on('basket:change', () => {
+   
     const cardBasketArray = basketModel.basket.map((card, index) => {
         const cardBasket = new BasketItemView(
             cloneTemplate(cardBasketTemplate),
@@ -215,6 +240,7 @@ events.on('basket:open', () => {
     modal.render({
         content: basketView.render({ items: cardBasketArray, total })
     });
+    basketModel.updateItemCount();
 });
 
 // Открыть выбранный карточки
@@ -272,3 +298,4 @@ api.getCardList()
 .catch((err) => {
   console.error(err);
 });
+

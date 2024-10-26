@@ -31,9 +31,9 @@ export class BasketView extends Component<IBasketView> {
       });
     }
 
-    this.events.on('basket:updateTotal', ({ total }: { total: number }) => {
-      this.setTotal(total);
-    });
+    this.events.on('basket:updateTotal', ({ total }: { total: number }) => { 
+      this.setTotal(total); 
+    }); 
 
     this.checkIfEmpty();
     this.items = [];
@@ -67,11 +67,15 @@ export class BasketView extends Component<IBasketView> {
 
 
   render(data: { items: HTMLElement[], total: number }) {
+   
     if (data) {
       this.setTotal(data.total);
       this._list.replaceChildren(...data.items);
       this.checkIfEmpty();
+     
+      
     }
+    
     return this.container;
   }
 }

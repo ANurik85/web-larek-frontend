@@ -28,7 +28,7 @@ export class Page extends Component<IPage> {
         });
 
       // Событие обновления корзины
-    this.events.on('basket:updateСount', ({ itemCount }: { itemCount: number }) => {
+    this.events.on('basket:update', ({ itemCount }: { itemCount: number }) => {
         this.counter = itemCount;
       });
 
