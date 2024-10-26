@@ -11,7 +11,7 @@ export interface IProduct {
   id: string;
   title: string;
   price: string;
-  indexNumber: number;
+  indexNumber?: number;
 
 }
 

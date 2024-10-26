@@ -27,10 +27,6 @@ export class Page extends Component<IPage> {
             this.events.emit('basket:open');
         });
 
-      // Событие обновления корзины
-    this.events.on('basket:update', ({ itemCount }: { itemCount: number }) => {
-        this.counter = itemCount;
-      });
 
     }
 

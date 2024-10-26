@@ -11,7 +11,6 @@ export class Success extends Component<ISuccess> {
     protected _close: HTMLElement;
     protected _total: HTMLElement;
 
-
     constructor(container: HTMLElement, events: IEvents) {
         super(container);
 

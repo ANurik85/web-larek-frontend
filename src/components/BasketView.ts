@@ -6,7 +6,6 @@ import { Component } from "./base/Component";
 interface IBasketView {
   items: HTMLElement[];
   total: number;
-
 }
 
 // корзина товара
@@ -30,11 +29,6 @@ export class BasketView extends Component<IBasketView> {
         events.emit('address:open');
       });
     }
-
-    this.events.on('basket:updateTotal', ({ total }: { total: number }) => { 
-      this.setTotal(total); 
-    }); 
-
     this.checkIfEmpty();
     this.items = [];
 
