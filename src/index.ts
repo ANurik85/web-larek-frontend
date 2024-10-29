@@ -156,80 +156,128 @@ events.on('basket:remove', (event: { id: string }) => {
 
 });
 
-events.on('basket:add', () => {
+// events.on('basket:add', () => {
 
-    basketModel.addToBasket({ id: card.id.toString(), title: card.title, price: card.price });
-    events.emit('basket:change');
-    modal.close();
-  });
+//     basketModel.addToBasket({ id: card.id.toString(), title: card.title, price: card.price });
+//     events.emit('basket:change');
+//     modal.close();
+//   });
   
+events.on('basket:add', (event: { id: string }) => {
+    const card = basketModel.addToBasket({ id: event.id, title: '', price: '' });
+    events.emit('basket:change');
+    basketView.items = basketModel.basket;
+  });
+// // событие изменения корзины
+// events.on('basket:change', () => {
+//     const cardBasketArray = basketModel.basket.map((card, index) => {
+      
+//         return basketItemView.render({
+//             id: card.id,
+//             title: card.title,
+//             price: card.price,
+//             indexNumber: index + 1,
+//         });
+//     });
+
+//     modal.render({
+//         content: basketView.render({
+//             items: cardBasketArray,
+//             total: basketModel.calculateTotal(),
+//         }),
+//     });
+    
+//     // Обновление счетчика корзины
+//     page.counter = basketModel.getItemCount();
+// });
+
+// // открываем модальное окно корзину
+// events.on('basket:open', () => {
+//     const cardBasketArray = basketModel.basket.map(product => {
+//         const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
+//         basketItemView.render(product);
+//         return basketItemView.getElement();
+//     });
+//     modal.render({
+//         content: basketView.render({ items: cardBasketArray, total: basketModel.calculateTotal() })
+//     });
+// });
+
+// // событие изменения корзины
+// events.on('basket:change', () => {
+//     const cardBasketArray = basketModel.basket.map((card, index) => {
+//         return basketItemView.render({
+//             id: card.id,
+//             title: card.title,
+//             price: card.price,
+//             indexNumber: index + 1,
+//         });
+//     });
+
+//     // Обновляем представление корзины
+//     basketView.render({
+//         items: cardBasketArray,
+//         total: basketModel.calculateTotal(),
+//     });
+
+//     // Обновление счетчика корзины
+//     page.counter = basketModel.getItemCount();
+// });
 // событие изменения корзины
 events.on('basket:change', () => {
-    const cardBasketArray = basketModel.basket.map((card, index) => {
-      
-        return basketItemView.render({
-            id: card.id,
-            title: card.title,
-            price: card.price,
-            indexNumber: index + 1,
-        });
+    // Обновляем представление корзины
+    basketView.render({
+      items: basketModel.basket,
+      total: basketModel.calculateTotal(),
     });
-
+  
+    // Обновление счетчика корзины
+    page.counter = basketModel.getItemCount();
+  });
+// открываем модальное окно корзину
+events.on('basket:open', () => {
     modal.render({
         content: basketView.render({
-            items: cardBasketArray,
+            items: basketModel.basket,
             total: basketModel.calculateTotal(),
         }),
     });
-    
-    // Обновление счетчика корзины
-    page.counter = basketModel.getItemCount();
 });
 
-// открываем модальное окно корзину
-events.on('basket:open', () => {
-    const cardBasketArray = basketModel.basket.map(product => {
-        const basketItemView = new BasketItemView(cloneTemplate(cardBasketTemplate), events);
-        basketItemView.render(product);
-        return basketItemView.getElement();
-    });
-    modal.render({
-        content: basketView.render({ items: cardBasketArray, total: basketModel.calculateTotal() })
-    });
-});
 
+
+//   events.on('basket:open', () => {
+//     modal.render({
+//       content: basketView.render({
+//         items: cardBasketArray,
+//         total: basketModel.calculateTotal(),
+//       }),
+//     });
+//   });
+  
 // Открыть выбранный карточки
 events.on('card:select', (item: ICard) => {
-    const showItem = (item: ICard) => {
-        const modalContent = card.render({ ...item });
-        const product = basketModel.basket.find((product: IProduct) => product.id === item.id);
+    const modalContent = card.render({ ...item });
+    const product = basketModel.basket.find((product: IProduct) => product.id === item.id);
 
-        if (card.button) {
-            const updateButtonState = () => {
-                card.button.textContent = product ? 'Удалить из корзину' : 'В корзину';
-            };
-            updateButtonState();
-            card.button.addEventListener('click', () => {
-                try {
-                    if (product) {
-                        events.emit('basket:remove', { id: item.id });
-                        
-                        modal.close();
-                    } else {
-
-                        events.emit('basket:add', { id: item.id });
-                       
-                    }
-                    updateButtonState();
-                } catch (error) {
-                    console.error(error);
+    if (card.button) {
+        card.button.textContent = product ? 'Удалить из корзину' : 'В корзину';
+        card.button.addEventListener('click', () => {
+            try {
+                if (product) {
+                    events.emit('basket:remove', { id: item.id });
+                    modal.close();
+                } else {
+                    events.emit('basket:add', { id: item.id });
                 }
-            });
-        }
+                card.button.textContent = product ? 'Удалить из корзину' : 'В корзину';
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    }
 
-        modal.render({ content: modalContent });
-    };
-    showItem(item);
+    modal.render({ content: modalContent });
 });
 
 // Блокируем прокрутку страницы если открыта модалка

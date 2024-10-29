@@ -1,5 +1,5 @@
 import { Component } from "./base/Component";
-import { ICard, IProduct } from "../types";
+import { ICard } from "../types";
 import { ensureElement } from "../utils/utils";
 import { IEvents } from "./base/events";
 

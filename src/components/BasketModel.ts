@@ -15,20 +15,20 @@ export class BasketModel implements IBasketModel {
   
   }
 
-  addToBasket(cardId: IProduct): boolean {
-    const index = this.basket.findIndex(item => item.id === cardId.id);
+  addToBasket(item: IProduct): boolean {
+    const index = this.basket.findIndex((IProduct) => IProduct.id === item.id);
+    
     if (index === -1) {
-      this.basket.push({ id: cardId.id.toString(), title: cardId.title, price: cardId.price, indexNumber: cardId.indexNumber });
+      this.basket.push(item);
+      this.basket = this.basket.map((item, index) => ({ ...item, indexNumber: index + 1 }));
       this.events.emit('basket:change');
       return true;
       
     } else {
-      this.basket = this.basket.map((item, index) => ({ ...item, indexNumber: index + 1 }));
-      this.events.emit('basket:change');
       return false;
     }
   }
-  
+
   removeCard(cardId: string) {
     const index = this.basket.findIndex(item => item.id === cardId);
     if (index !== -1) {
@@ -39,10 +39,7 @@ export class BasketModel implements IBasketModel {
   }
 
   clearBasket(): void {
-    this.basket.forEach(card => { 
-      this.removeCard(card.id); 
-    });
-    this.basket = [];
+       this.basket = [];
         this.events.emit('basket:change');
   }
 
@@ -64,5 +61,5 @@ export class BasketModel implements IBasketModel {
       return sum; 
     }, 0);
   }
-
+ 
 }
