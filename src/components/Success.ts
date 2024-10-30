@@ -24,9 +24,7 @@ export class Success extends Component<ISuccess> {
             });
         }
     }
-    set total(total: number) {
-        const text = this._total.innerText;
-        this._total.innerText = text.replace(/\d+/, `${total}`);
-    }
+
+    set total(total: number) { this.setText(this._total, this._total.innerText.replace(/\d+/, `${total}`)); }
 
 }

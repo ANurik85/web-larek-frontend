@@ -14,6 +14,7 @@ export class BasketView extends Component<IBasketView> {
   protected _list: HTMLElement;
   protected _total: HTMLElement;
   protected _button: HTMLButtonElement;
+  private _totalValue: number;
 
   constructor(protected container: HTMLElement, protected events: EventEmitter) {
     super(container);
@@ -23,7 +24,7 @@ export class BasketView extends Component<IBasketView> {
     this._button = this.container.querySelector('.basket__button') as HTMLButtonElement;
 
 
-      if (this._button) {
+    if (this._button) {
       this._button.addEventListener('click', () => {
 
         events.emit('address:open');
@@ -35,15 +36,21 @@ export class BasketView extends Component<IBasketView> {
 
   }
 
-  set items(items: HTMLElement[]) { 
-    this._list.replaceChildren(...items); 
-  } 
-  setTotal(total: number) {
-    this._total.textContent = `${total} синапсов`;
+  set items(items: HTMLElement[]) {
+    this._list.replaceChildren(...items);
   }
 
+  set total(value: number) {
+    this._totalValue = value;
+    this.setText(this._total, `${value} синапсов`);
+  }
+
+  get total(): number {
+    return this._totalValue;
+  }
 
   getElement(): HTMLElement {
+
     return this.container;
   }
 
@@ -57,17 +64,7 @@ export class BasketView extends Component<IBasketView> {
     }
   }
 
+  render() { this.checkIfEmpty(); return this.container; }
 
-  render(data: { items: HTMLElement[], total: number }) {
-   
-    if (data) {
-      this.setTotal(data.total);
-      this._list.replaceChildren(...data.items);
-      this.checkIfEmpty();
-     
-      
-    }
-    
-    return this.container;
-  }
+
 }

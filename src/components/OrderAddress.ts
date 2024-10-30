@@ -7,6 +7,7 @@ export class OrderAddress extends Form<IOrderResult> {
   private _payment: string;
   protected _button: HTMLButtonElement;
   protected _buttonSelect: HTMLElement;
+  protected _buttons: NodeListOf<HTMLButtonElement>;
   order: IFormAddress = {
     payment: '',
     address: ''
@@ -20,7 +21,7 @@ export class OrderAddress extends Form<IOrderResult> {
 
     this._button = this.container.querySelector('.order__button') as HTMLButtonElement;
     this._buttonSelect = this.container.querySelector('.order__buttons') as HTMLElement;
-
+    this._buttons = this.container.querySelectorAll('.order__buttons button') as NodeListOf<HTMLButtonElement>;
     if (this._button) {
       this._button.addEventListener('click', () => {
         events.emit('order:open');
@@ -33,7 +34,7 @@ export class OrderAddress extends Form<IOrderResult> {
         if (target.classList.contains('button_alt')) {
           this.payment = target.textContent;
           this.setAddressField('payment', target.textContent);
-        
+
         }
       });
     }
@@ -46,20 +47,7 @@ export class OrderAddress extends Form<IOrderResult> {
   }
 
 
-  set payment(value: string) {
-    const buttons = this.container.querySelectorAll('.order__buttons button');
-    buttons.forEach((button) => {
-      if (button.textContent === value) {
-        button.classList.add('button_alt-active');
-        button.setAttribute('selected', '');
-      } else {
-        button.classList.remove('button_alt-active');
-        button.removeAttribute('selected');
-      }
-    });
-    this.order.payment = value;
-    this._payment = value;
-  }
+  set payment(value: string) { this._buttons.forEach((button) => { if (button.textContent === value) { button.classList.add('button_alt-active'); button.setAttribute('selected', ''); } else { button.classList.remove('button_alt-active'); button.removeAttribute('selected'); } }); this.order.payment = value; this._payment = value; }
 
   get payment(): string {
     return this._payment;
